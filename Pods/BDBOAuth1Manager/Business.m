@@ -21,10 +21,13 @@
         self.distance = [dict[@"distance"] integerValue] * 0.000621371;
         self.reviewCount = [dict[@"review_count"] integerValue];
 
-        NSString *address = [dict valueForKeyPath:@"location.address"][0];
-        NSString *neighborhood = [dict valueForKeyPath:@"location.neighborhoods"][0];
+        NSArray *addresses = [dict valueForKeyPath:@"location.address"];
+        NSString *address = addresses.firstObject;
+        
+        NSArray *neighborhoods = [dict valueForKeyPath:@"location.neighborhoods"];
+        NSString *neighborhood = neighborhoods.firstObject;
+        
         self.address = [NSString stringWithFormat:@"%@, %@", address, neighborhood];
-
         
         NSArray *categories = dict[@"categories"];
         NSMutableArray *categoryNames = [NSMutableArray array];

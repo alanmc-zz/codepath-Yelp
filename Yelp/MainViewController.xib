@@ -7,6 +7,7 @@
     <objects>
         <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner" customClass="MainViewController">
             <connections>
+                <outlet property="searchDisplayController" destination="lpo-Od-R32" id="xFp-ee-Q5x"/>
                 <outlet property="tableView" destination="mB1-rA-EcG" id="27K-5G-jJc"/>
                 <outlet property="view" destination="i5M-Pr-FkT" id="sfx-zR-JGt"/>
             </connections>
@@ -20,6 +21,13 @@
                     <rect key="frame" x="0.0" y="0.0" width="320" height="568"/>
                     <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                 </tableView>
+                <searchBar contentMode="redraw" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="F6A-U0-p74">
+                    <rect key="frame" x="0.0" y="0.0" width="320" height="44"/>
+                    <textInputTraits key="textInputTraits"/>
+                    <connections>
+                        <outlet property="delegate" destination="-1" id="lsY-Eh-ThM"/>
+                    </connections>
+                </searchBar>
             </subviews>
             <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
             <constraints>
@@ -29,6 +37,15 @@
                 <constraint firstItem="mB1-rA-EcG" firstAttribute="top" secondItem="i5M-Pr-FkT" secondAttribute="top" id="hvB-wQ-hHJ"/>
             </constraints>
         </view>
+        <searchDisplayController id="lpo-Od-R32">
+            <connections>
+                <outlet property="delegate" destination="-1" id="AoX-iE-9gM"/>
+                <outlet property="searchBar" destination="F6A-U0-p74" id="0Vj-9N-NDD"/>
+                <outlet property="searchContentsController" destination="-1" id="3Rm-i2-ZvK"/>
+                <outlet property="searchResultsDataSource" destination="-1" id="Osx-Zj-5N7"/>
+                <outlet property="searchResultsDelegate" destination="-1" id="TnM-R8-F3R"/>
+            </connections>
+        </searchDisplayController>
     </objects>
     <simulatedMetricsContainer key="defaultSimulatedMetrics">
         <simulatedStatusBarMetrics key="statusBar"/>

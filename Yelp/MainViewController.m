@@ -10,6 +10,7 @@
 #import "YelpClient.h"
 #import "YelpResultTableViewCell.h"
 #import "Business.h"
+#import "FiltersViewController.h"
 
 NSString * const kYelpConsumerKey = @"jo30sfYRQFioBI4EEB0Z_w";
 NSString * const kYelpConsumerSecret = @"u1xraNnCEo7BX6UFgmjP0JU_BFA";
@@ -21,6 +22,11 @@ NSString * const kYelpTokenSecret = @"rcqpqfPAj4qxFE6FpsO9fHvJ5vo";
 @property (strong, nonatomic) YelpClient *client;
 @property (weak, nonatomic) IBOutlet UITableView *tableView;
 @property (strong, atomic) NSArray *searchResults;
+@property (strong, nonatomic) YelpResultTableViewCell* currentCell;
+@property (strong, nonatomic) NSString *query;
+
+- (void)fetchBusinessesWithQuery:(NSString *)query params:(NSDictionary *)params;
+
 @end
 
 @implementation MainViewController
@@ -33,6 +39,8 @@ NSString * const kYelpTokenSecret = @"rcqpqfPAj4qxFE6FpsO9fHvJ5vo";
                                                consumerSecret:kYelpConsumerSecret
                                                   accessToken:kYelpToken
                                                  accessSecret:kYelpTokenSecret];
+        self.query = @"";
+        [self fetchBusinessesWithQuery:self.query params:nil];
     }
     return self;
 }
@@ -40,7 +48,8 @@ NSString * const kYelpTokenSecret = @"rcqpqfPAj4qxFE6FpsO9fHvJ5vo";
 - (void)viewDidLoad
 {
     [super viewDidLoad];
-
+    
+    self.searchDisplayController.displaysSearchBarInNavigationBar = YES;
     self.title = @"Yelp";
 
     self.tableView.delegate = self;
@@ -54,17 +63,20 @@ NSString * const kYelpTokenSecret = @"rcqpqfPAj4qxFE6FpsO9fHvJ5vo";
                                                                   target:self
                                                                   action:@selector(onFilter)];
     self.navigationItem.leftBarButtonItem = leftButton;
-    
-    [self.client searchWithTerm:@"Thai"
-                        success:^(AFHTTPRequestOperation *operation, id response) {
-        self.searchResults = [Business businessesWithDictionaries:response[@"businesses"]];
-        [self.tableView reloadData];
-    }
-                        failure:^(AFHTTPRequestOperation *operation, NSError *error) {
-        NSLog(@"error: %@", [error description]);
-    }];
 }
 
+- (void)fetchBusinessesWithQuery:(NSString *)query params:(NSDictionary *)params {
+    [self.client searchWithTerm:query
+                         params:params
+                        success:^(AFHTTPRequestOperation *operation, id response) {
+                            self.searchResults = [Business businessesWithDictionaries:response[@"businesses"]];
+                            [self.tableView reloadData];
+                            [self.searchDisplayController.searchResultsTableView reloadData];
+                        }
+                        failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+                            NSLog(@"error: %@", [error description]);
+                        }];
+}
 - (void)didReceiveMemoryWarning
 {
     [super didReceiveMemoryWarning];
@@ -75,14 +87,31 @@ NSString * const kYelpTokenSecret = @"rcqpqfPAj4qxFE6FpsO9fHvJ5vo";
 }
 
 - (UITableViewCell*)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
-    YelpResultTableViewCell *cell = [self.tableView dequeueReusableCellWithIdentifier:@"YelpResultTableViewCell"];
+    _currentCell = [self.tableView dequeueReusableCellWithIdentifier:@"YelpResultTableViewCell"];
+    return _currentCell;
+}
 
-    [cell setBusiness:self.searchResults[indexPath.row]];
-    return cell;
+- (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath {
+    self.currentCell.business = self.searchResults[indexPath.row];
+    CGSize size = [self.currentCell.contentView systemLayoutSizeFittingSize:UILayoutFittingCompressedSize];
+    return size.height + 1;
+}
+
+- (BOOL)searchDisplayController:(UISearchDisplayController *)controller shouldReloadTableForSearchString:(NSString *)searchString {
+    _query = searchString;
+    [self fetchBusinessesWithQuery:self.query params:nil];
+    return YES;
 }
 
 - (void)onFilter {
-    NSLog(@"Filter");
+    FiltersViewController *fvc = [[FiltersViewController alloc] init];
+    fvc.delegate = self;
+    UINavigationController *nvc = [[UINavigationController alloc] initWithRootViewController:fvc];
+    [self presentViewController:nvc animated:YES completion:nil];
+}
+
+- (void)filtersViewControllers:(FiltersViewController *)filtersViewController didChangeFilters:(NSDictionary *)filters {
+    [self fetchBusinessesWithQuery:self.query params:filters];
 }
 
 @end
